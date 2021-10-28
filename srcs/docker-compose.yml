@@ -1,0 +1,61 @@
+version: "3"
+services:
+
+  nginx:
+    build: ./requirements/nginx
+    container_name: nginx
+    image: nginx
+    ports:
+      - 443:443
+    networks:
+      inception_net:
+    depends_on:
+      - wordpress
+    restart: always
+    volumes: 
+      - vol-wp:/var/www/html/
+ 
+  wordpress:   
+    depends_on:
+      - mariadb
+    build: ./requirements/wordpress
+    container_name: wordpress
+    image: wordpress
+    ports:
+      - 9000:9000
+    networks:
+      inception_net:
+    restart: always
+    volumes: 
+      - vol-wp:/var/www/html/
+    env_file: .env
+
+  mariadb:
+    build: ./requirements/mariadb
+    container_name: mariadb
+    image: mariadb
+    ports:
+      - 3306:3306
+    networks:
+      inception_net:
+    restart: always
+    volumes:
+      - vol-wp_db:/var/lib/mysql/wordpress
+    env_file: .env
+
+networks:
+  inception_net:
+
+volumes:
+  vol-wp:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/murachid/data/wordpress_files
+      o: bind
+  vol-wp_db:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/murachid/data/wordpress_databases
